@@ -1,0 +1,622 @@
+openapi: 3.0.0
+# Added by API Auto Mocking Plugin
+servers:
+  - description: fsm dummy server
+    url: https://virtserver.swaggerhub.com/Real-IT/FSM_MVP/1.0.0
+info:
+  description: This is the FSM API
+  version: "1.0.0"
+  title: FSM API
+  contact:
+    email: you@your-company.com
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: FSM
+    description: relevant for FSM usage
+  - name:  NTM
+    description: relevant for NTM usage
+paths:
+  /locations:
+    get:
+      tags:
+        - FSM
+      summary: allows looking up matching station for a given match value based on MatchType
+      operationId: getLocations
+      description: allows to build a lookup functionality to get station codes based on whatever is known of the station
+      parameters:
+        - name: Accept-Language 
+          in: header
+          description:
+             Describes the set of natural languages that are preferred as a response to the request (see RFC2616-sec14.4). The response header will set "Content-Language" concerning the content (supported languages and fallback-language , depends on underlyling system).
+          schema:
+            type: string
+          required: false
+        - name: matchValue
+          in: query
+          schema:
+            type: string
+          required: true
+       
+        - name: matchType
+          in: query
+          description:
+            Defines the search token type in matchValue (TEXT for names; ANY_CODE fallbacks to the code supported by the underlyling system (like UIC, EVA or RESARAIL); UIC/EVA/RESARAIL forces stations defined by the appropriate code-system explicitely (national aspect); COORDS given as "lat,lon").
+          required: true
+          schema:
+            type: string
+            default: NAME
+            enum: 
+            - NAME     # station name
+            - ANY_CODE # use if caller does not know default code of underlyling system
+            - CODELIST
+            - COORDS
+          # Future use: ADDRESS_OR_POI
+        - name: matchCodeList
+          in: query
+          description:
+            in case matchvalue is codelist, the codelist to search into
+          schema:
+            type: string
+          required: false
+        - name: countryCode
+          in: query
+          description: Search locations for a specific country (ISO 3166, 2-digits).
+          required: false
+          schema:
+            type: string
+            example: CH
+        - name: limit
+          in: query
+          description:
+            The number of locations to be returned ([1..50]).
+          required: false
+          schema:
+            type: number
+            default: 10
+      responses:
+        '200':
+          description: the set of stations matching the provided input
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+        '400':
+          description: bad input parameter
+  /location/{id}:
+    get:
+      tags:
+        - FSM
+      summary: retrieves a location element
+      operationId: getLocation
+      description: allows to retrieve a complete description 
+      parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.
+       
+      responses:
+        '200':
+          description: the set of stations matching the provided input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: bad input parameter
+  /trip{id}:
+    get:
+      tags:
+        - FSM
+      summary: retrieves a trip element
+      parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.
+      operationId: getTrip
+      description: retrieves a trip element representing a train travel made of one or more segments
+      responses:
+        '200':
+          description: the requested trip
+          content:
+            application/json:
+              schema:
+              #decision: should we mark a schema as resource by naming convention (ex: Res prefix) ?
+                $ref: '#/components/schemas/TripDef'
+        '400':
+          description: bad input parameter
+  #decision: not sure we want to use a simple get trips here. I would plead for allowing setting a level in the post offer search where we can specify if we want only schedules (in which case tariff-related parameters are ignored) or complete offers. This also because I do not see an elegant REST way to have scrolling
+  /tripsCollection:
+    get:
+      tags:
+          - FSM
+      summary: 
+        The tripsCollection service returns different trips for 
+        a specified origin and destination (and via). 
+        The unique codes of the origin and destination can be resolved using the locations service.
+      operationId: getTripsCollection
+      parameters:
+        - name: Accept-Language
+          in: header
+          description:
+           Describes the set of natural languages that are preferred as a response to the request (see RFC2616-sec14.4).
+           The response header will set "Content-Language" concerning the content
+           (supported languages and fallback-language, depends on underlyling system).
+          schema:
+            type: string
+          required: false
+        - name: Scroll-Context
+          in: header
+          description:
+             Based on a previous search-response, earlier or later connections for the same   trip can be retrieved
+             by scrolling back and forth (by a pointer-context). You must use the same request parameters as in the original
+               trips-request and the given values in the response for either "ScrollBack-Context" or "ScrollForward-Context" for optional scrolling.
+          schema:
+            type: string
+          required: false
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: Trip(s) found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripsCollection'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented          
+    post:
+      tags:
+        - FSM
+      summary: 
+        The tripsCollection service returns different trips for a specified origin
+        and destination (and via). The unique codes of the origin and
+        destination can be resolved using the locations service.
+      operationId: getTripsUsingGET
+      parameters:
+        - name: Accept-Language
+          in: header
+          description:
+             Describes the set of natural languages that are preferred as a response to the request (see RFC2616-sec14.4).
+             The response header will set "Content-Language" concerning the content
+             (supported languages and fallback-language, depends on underlyling system).
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                matchType:
+                  description:
+                    Defines the search token type in matchValue (TEXT for names; ANY_CODE fallbacks to the code supported by the underlyling system (like UIC, EVA or RESARAIL); UIC/EVA/RESARAIL forces stations defined by the appropriate code-system explicitely (national aspect); COORDS given as "lat,lon").
+                  type: string
+                  default: NAME
+                  enum: 
+                  - NAME     # station name
+                  - ANY_CODE # use if caller does not know default code of   underlyling system
+                  - CODELIST
+                  - COORDS
+                  # Future use: ADDRESS_OR_POI
+                matchCodeList:
+                  description:
+                    in case matchType is codelist, the codelist to search into
+                  type: string
+                originValue:
+                  description: 
+                    The origin or departing location.
+                    Unique code value has to be set according to valueType.
+                  type: string
+                destinationValue:
+                  description:
+                    The destination or arrival location.
+                    Unique code value has to be set according to valueType.
+                  type: string
+                viaValues:
+                  description:
+                    Ordered list of via locations within the trip.
+                    Unique code value has to be set according to valueType.
+                    Max number of via's depends on the underlying system.
+                  type: array
+                  items:
+                    type: string
+                dateTime:
+                  description: 
+                    Local date/time of the underlying system (ISO notation see RFC3339-sec5.6).
+                    Timezone is related to station time, therefore it must not be specified in request.
+                    The underlying system will find hits about the given instance in time and will respond dateTime with appropriate TIMEZONE as well.
+                  type: string
+                  format: date-time
+                  default: Now (at origin)
+                isArrival:
+                  description: 
+                    Defines whether or not the given date/time is the latest arrival 
+                    (true arriving at given time; false departing at given time).
+                  type: boolean
+                  default: false
+                stopBehaviour:
+                  description: 
+                    Influences what stops are to be returned in response
+                    (ORIGIN_DESTINATION_ONLY returns no intermediate stops;
+                    REAL_BOARDING_ALIGHTING returns all stops except virtual stops).
+                  type: string
+                  default: ORIGIN_DESTINATION_ONLY
+                  enum: 
+                    - ORIGIN_DESTINATION_ONLY # returns only origin and destination stops (Hafas::passingPoints=false)
+                    - REAL_BOARDING_ALIGHTING # returns only stops where a customer may step in/out of the transport-product (Hafas: passingPoints=true;showPassingPoints=false)
+                    #- ALL_BOARDING_ALIGHTING  future use: virtual stops
+                serviceBrands:
+                  description: 
+                    Service brand codes allowed in response, code list published on UIC web site 
+                  type: array
+                  items:
+                    type: string
+                maxChanges:
+                  description: Max amount of transport-product changes (0 for     direct connection, default/max=11)
+                  type: number
+                # Future use incremental/additionalChangingTime
+              required:
+                - originValue
+                - destinationValue
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: Trip(s) found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripsCollection'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented
+ 
+components:
+  schemas:
+    Link:
+      type: object
+      required:
+        - contentTypes
+        - href
+        - relation
+      properties:
+        contentTypes:
+          type: array
+          example: '["application/json", "application/pdf"]'
+          description: Possible content types of the resource.
+          items:
+            type: string
+        href:
+          type: string
+          description: URL to the linked resource (no parameters needed).
+          example: https://www.brussels.info/train-stations/
+        method:
+          type: string
+          example: GET
+          description: HTTP method to call the action
+        relation:
+          type: string
+          example: Get Map
+          description: Relation of this link to the current entity.
+        version:
+          type: integer
+          format: int32
+          example: 1
+          description: Version of the current relation.
+      description: 
+        The underlying system may provide additional links pointing
+        on further information (such as HTML download links, websites or extended APIs).
+        Mechanism to add flexible extensions specific to an underlying system.  
+    #decision: should segments be a standalone resource or a data structure. general question: how radical should we go with the everything is a resource approach ?
+    #proposition is to act on case by case and only make resources where relevant
+    #in this case: data structure
+    segment:
+      type: object
+      properties:
+        index:
+          type: integer
+        origin:
+        #Decision: however if locations are a resource
+          $ref: '#/components/schemas/LocationRef'
+        destination:
+          $ref: '#/components/schemas/LocationRef'
+        seqId:
+          description: ordering of the trains
+          type: number
+        transfer:
+          description: Transfer to the next vehicle not included in the request
+          type: object
+          properties:
+            duration:
+              description: duration forseen as transfer to the next section
+              type: number
+            transferType:
+              description: 'WALK,...'
+              type: string
+          required:
+            - duration
+            - transferType
+          additionalProperties: false
+        vehicle:
+          type: object
+          properties:
+            number:
+              description: 'id of the vehicle, In case of two train s running in parallel there might be two train numbers.'
+              type: array
+              items:
+                type: string
+            line:
+              description: line number in case the vehical does not have a number
+              type: string
+            serviceBrand:
+              $ref: '#/components/schemas/ServiceBrandCodeDef'
+            transportMode:
+              description: 'transport mode (code list of MERITS). Optional for offer requests, included for alignment with FSM'
+              type: string
+              additionalProperties: false
+        stops:
+            type: array
+            items:
+              type: object
+              properties:
+                station:
+                  $ref: '#/components/schemas/LocationRef'
+                departureDateTime:
+                  description: date and time in the time zone of the station
+                  type: string
+                arrivalDateTime:
+                  description: date and time in the time zone of the station
+                  type: string
+                index:
+                  type: number
+                  example: 5
+                  description:
+                    Unique value [0..*] within the segment, guaranteeing an ascending order,
+                    though the value may jump non-continuously.
+                    # ~Hafas StopType::routeIndex or any numbering by the underlying system
+                departureTrack:
+                  type: string
+                  example: '13A'
+                  description: The info about the departure-track of the stop. Format depends on operator.
+                arrivalTrack:
+                  type: string
+                  example: '13B'
+                  description: The info about the arrival-track of the stop. Format depends on operator.
+              description: 
+                Represents a location resp. station.
+                Either a departure, arrival or intermediate stop along a segment of a trip.
+              required:
+                - station
+              additionalProperties: false
+      required:
+        - seqId
+        - vehicle
+      additionalProperties: false
+      #decision: I would like to use urls in the station definition, ideally as the id.cf HATEOAS principles
+      #decision: station representation not aligned: nTM makes different objects including a stationdef, while we made a "location element" in the original locations specification file, we had this as "locations". I would propose the following structure, and propose to match it to the stationDef of nTM
+    StationDef:
+      type: object
+      properties:
+        codeList:
+          $ref: '#/components/schemas/StationCodeListDef'
+        country:
+          type: string
+        localCode:
+          type: string
+        name:
+          type: string
+      required:
+        - country
+        - localCode
+      additionalProperties: false  
+  
+    #decision: I propose to make location a resource...and to have a locationRef for stops, origin, destinations etc. Rationale: the location is cacheable so no need to include it all in each message.
+    LocationRef:
+      type: object
+      properties:
+        href: 
+          type: string
+          format: url
+          example: 'http://some.provider/location/2345'
+        title:
+          type: string
+          example: 'Bruxelles-Midi'
+    Location:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        type:
+          type: string
+          enum: [ADDRESS, STATION, STATION_COMPLEX, STATION_ZONE, POI_BORDER, POI ]
+        Station: 
+          $ref: '#/components/schemas/StationDef'
+        POI:
+          $ref: '#/components/schemas/POI'
+        Address:
+          $ref: '#/components/schemas/Address'
+        coords:
+          $ref: '#/components/schemas/Coordinate'
+        links:
+          type: array
+          description: 
+            Context information required by the services.
+          items:
+            $ref: '#/components/schemas/Link'
+      required:
+        - country
+        - LocationCode
+      additionalProperties: false
+    StationCodeListDef:
+      description: 'code list used for the station codes: UIC = UIC codes as used by merits (UIC country code + local code) = Default// UIC-R = UIC codes for reservation (UIC country code + local code reservation) // ERA = future ERA station code'
+      type: string
+      default: UIC
+    Address:
+      type: object
+      description: 'used to encode an address'
+      properties:
+        street: 
+          type: string
+        houseNr:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        country: 
+          type: string
+    POICodeList:
+      description: 'code list used for the POI codes:'
+      type: string
+      default: UIC
+    TripRef:
+      type: object
+      properties:
+        href: 
+          type: string
+          format: url
+          example: 'http://some.provider/trip/2345'
+        title:
+          type: string
+          example: 'Bruxelles-Midi - Paris-Nord 10:05'      
+    TripDef:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        segments:
+          type: array
+          items:
+            #decision: proposition is to have a separate segment definition
+            $ref:  '#/components/schemas/segment'
+        #decision: proposition is to add trip origin & destination
+        #decision: either we nest the location or we work with reference
+        origin:
+          $ref: '#/components/schemas/LocationRef'
+        destination:
+          $ref: '#/components/schemas/LocationRef'
+        duration:
+          type: string
+          description: 
+            Total duration over all segment's (format see https://www.w3.org/TR/xmlschema11-2/#duration)
+          example: P2DT3H4M
+        links:
+          type: array
+          description: 
+            Context information required by the services.
+          items:
+            $ref: '#/components/schemas/Link'
+      additionalProperties: false
+    ServiceBrandCodeDef:
+      description: 'Service brand code, code list published on UIC web site'
+      type: integer
+    POI:
+      type: object
+      properties:
+        codeList:
+          $ref: '#/components/schemas/POICodeList'
+        country:
+          type: string
+        localCode:
+          type: string
+        name:
+          type: string
+      required:
+        - country
+        - localCode
+      additionalProperties: false  
+    Coordinate:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+          example: 46.948825
+          description: Latitude of centre coordinate (WGS84 in decimal degrees).
+        lon:
+          type: number
+          format: double
+          example: 7.439122
+          description: Longitude of centre coordinate (WGS84 in decimal degrees).      
+      required:
+      - lat
+      - lon
+    TripsCollection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        tripsCollection:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripRef'
+        ScrollBack-Context: # supports Hafas::scrolling
+          type: string
+          description: 
+            Scroll reference for the current response to scroll backward.
+            (Value depends on underlying system.)
+        ScrollForward-Context: # supports Hafas::scrolling
+          type: string
+          description: 
+            Scroll reference for the current response to scroll   forward.
+            (Value depends on underlying system.)
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
