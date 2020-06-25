@@ -140,8 +140,7 @@ paths:
                 $ref: '#/components/schemas/TripDef'
         '400':
           description: bad input parameter
-  #decision: not sure we want to use a simple get trips here. I would plead for allowing setting a level in the post offer search where we can specify if we want only schedules (in which case tariff-related parameters are ignored) or complete offers. This also because I do not see an elegant REST way to have scrolling
-  /tripsCollection:
+   /tripsCollection:
     get:
       tags:
           - FSM
@@ -366,7 +365,6 @@ components:
         index:
           type: integer
         origin:
-        #Decision: however if locations are a resource
           $ref: '#/components/schemas/LocationRef'
         destination:
           $ref: '#/components/schemas/LocationRef'
@@ -442,8 +440,6 @@ components:
         - seqId
         - vehicle
       additionalProperties: false
-      #decision: I would like to use urls in the station definition, ideally as the id.cf HATEOAS principles
-      #decision: station representation not aligned: nTM makes different objects including a stationdef, while we made a "location element" in the original locations specification file, we had this as "locations". I would propose the following structure, and propose to match it to the stationDef of nTM
     StationDef:
       type: object
       properties:
@@ -459,8 +455,7 @@ components:
         - country
         - localCode
       additionalProperties: false  
-  
-    #decision: I propose to make location a resource...and to have a locationRef for stops, origin, destinations etc. Rationale: the location is cacheable so no need to include it all in each message.
+    #decision: I propose to make location a resource...and to have a locationRef for stops, origin, destinations etc. Rationale: the location is cacheable so no need to include it all in each message. I think this approach actually makes sense to avoid nesting resources.
     LocationRef:
       type: object
       properties:
@@ -544,7 +539,6 @@ components:
             #decision: proposition is to have a separate segment definition
             $ref:  '#/components/schemas/segment'
         #decision: proposition is to add trip origin & destination
-        #decision: either we nest the location or we work with reference
         origin:
           $ref: '#/components/schemas/LocationRef'
         destination:

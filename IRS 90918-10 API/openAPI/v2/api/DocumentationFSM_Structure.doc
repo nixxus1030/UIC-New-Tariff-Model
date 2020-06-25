@@ -1,0 +1,315 @@
+Date: Thu, 11 Jun 2020 09:22:51 +0000 (UTC)
+Message-ID: <1999332952.27.1591867371298@0616e8c41142>
+Subject: Exported From Confluence
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_26_86861547.1591867371298"
+
+------=_Part_26_86861547.1591867371298
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/exported.html
+
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>Documentation</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: #fff !important;
+        color: #000 !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: #000;
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        page-break-after: avoid;
+    }
+
+    pre {
+        font-family: Monaco, "Courier New", monospace;
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>Documentation</h1>
+    <div class=3D"Section1">
+        <h1 id=3D"Documentation-Resources,datastructures&amp;verbsDefinitio=
+ns">Resources, data structures &amp; verbs Definitions</h1>
+<h2 id=3D"Documentation-TripResource">Trip <span style=3D"color: rgb(255,86=
+,48);">Resource</span></h2>
+<p><br>The trip resource allows to represent a travel itinerary. It can be =
+made out of one or multiple <a href=3D"https://benerail.atlassian.net/wiki/=
+spaces/BBT/pages/1653374980" rel=3D"nofollow">segments</a> </p>
+<h3 id=3D"Documentation-Availableverbs">Available verbs</h3>
+<div class=3D"table-wrap">
+<table data-layout=3D"default" class=3D"confluenceTable">
+<tbody>
+<tr>
+<th class=3D"confluenceTh"><p style=3D"text-align: center;"><strong>GET</st=
+rong></p></th>
+<th class=3D"confluenceTh"><p style=3D"text-align: center;"><strong>POST</s=
+trong></p></th>
+<th class=3D"confluenceTh"><p style=3D"text-align: center;"><strong>PUT</st=
+rong></p></th>
+<th class=3D"confluenceTh"><p style=3D"text-align: center;"><strong>PATCH</=
+strong></p></th>
+<th class=3D"confluenceTh"><p style=3D"text-align: center;"><strong>DELETE<=
+/strong></p></th>
+</tr>
+<tr>
+<td class=3D"confluenceTd"><p style=3D"text-align: center;">Retrieves the t=
+rip representation</p></td>
+<td class=3D"confluenceTd"><p style=3D"text-align: center;">NA</p></td>
+<td class=3D"confluenceTd"><p style=3D"text-align: center;">NA</p></td>
+<td class=3D"confluenceTd"><p style=3D"text-align: center;">NA</p></td>
+<td class=3D"confluenceTd"><p style=3D"text-align: center;">NA</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id=3D"Documentation-SegmentDatastructure">Segment <span style=3D"color:=
+ rgb(54,179,126);">Data structure</span></h2>
+<p>A segment represents a physical train transportation between onboarding =
+station and offboarding station (either origin, destination or a transfer s=
+tations)</p>
+<h1 id=3D"Documentation-Modellingexamples">Modelling examples</h1>
+<h2 id=3D"Documentation-Bruxelles-Agen,Thalys+TGV+TER,1adult">Bruxelles - A=
+gen, Thalys + TGV + TER, 1 adult</h2>
+<p>&lt;visual representation&gt;</p>
+<p>&lt;schematic representation of the resources in yaml shop or booking&gt=
+;</p>
+<h2 id=3D"Documentation-Zurich-Basel,ICtrain2adultswithreduction">Zurich - =
+Basel, IC train 2 adults with reduction</h2>
+<p>&lt;visual representation&gt;</p>
+<p>&lt;schematic representation of the resources in yaml shop or booking&gt=
+;</p>
+<h2 id=3D"Documentation-Amsterdam-Frankfurt2adults">Amsterdam - Frankfurt 2=
+ adults</h2>
+<p>&lt;visual representation&gt;</p>
+<p>&lt;schematic representation of the resources in yaml shop or booking&gt=
+;</p>
+<p>=E2=80=A6</p>
+<h1 id=3D"Documentation-Basicdialogscatalog">Basic dialogs catalog</h1>
+<h2 id=3D"Documentation-Shopping&amp;scrolling">Shopping &amp; scrolling</h=
+2>
+<p>&lt;sequence diagram for one of the modelling examples&gt;</p>
+<p>&lt;A few words of explanation&gt;</p>
+<h2 id=3D"Documentation-Shopping&amp;Booking">Shopping &amp; Booking</h2>
+<p>&lt;sequence diagram for one of the modelling examples&gt;</p>
+<p>&lt;A few words of explanation&gt;</p>
+<h2 id=3D"Documentation-Shop,Book&amp;Cancel">Shop, Book &amp; Cancel</h2>
+<p>&lt;sequence diagram for one of the modelling examples&gt;</p>
+<p>&lt;A few words of explanation&gt;</p>
+<h2 id=3D"Documentation-Shop,Book&amp;Confirm">Shop, Book &amp; Confirm</h2=
+>
+<p>&lt;sequence diagram for one of the modelling examples&gt;</p>
+<p>&lt;A few words of explanation&gt;</p>
+<h2 id=3D"Documentation-Errorhandling">Error handling</h2>
+<h3 id=3D"Documentation-inbooking">in booking</h3>
+<h3 id=3D"Documentation-inconfirm">in confirm</h3>
+<p></p>
+<p></p>
+<p></p>
+    </div>
+</body>
+</html>
+------=_Part_26_86861547.1591867371298--
