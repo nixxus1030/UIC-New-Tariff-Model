@@ -13,10 +13,10 @@ info:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
-  - name: FSM
-    description: relevant for FSM usage
-  - name:  NTM
-    description: relevant for NTM usage
+  - name: Distributor
+    description: relevant for distribution usage
+  - name:  Allocator
+    description: relevant for allocator usage
 paths:
   /locations:
     get:
@@ -69,6 +69,7 @@ paths:
             example: CH
         - name: limit
           in: query
+          #decision: should we really limit to 50 => meant for autocomplete or allow larger "downloads", more meant for distributing reference data
           description:
             The number of locations to be returned ([1..50]).
           required: false
@@ -83,7 +84,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Location'
+                  $ref: '#/components/schemas/LocationRef'
         '400':
           description: bad input parameter
   /location/{id}:
@@ -140,7 +141,7 @@ paths:
                 $ref: '#/components/schemas/TripDef'
         '400':
           description: bad input parameter
-   /tripsCollection:
+  /tripsCollection:
     get:
       tags:
           - FSM
@@ -220,6 +221,7 @@ paths:
             schema:
               type: object
               properties:
+              #decision: how do we specify location as parameters. At the moment it is implicitly limited to station codes, but maybe we should broaden the scope here
                 matchType:
                   description:
                     Defines the search token type in matchValue (TEXT for names; ANY_CODE fallbacks to the code supported by the underlyling system (like UIC, EVA or RESARAIL); UIC/EVA/RESARAIL forces stations defined by the appropriate code-system explicitely (national aspect); COORDS given as "lat,lon").
@@ -278,6 +280,10 @@ paths:
                     - ORIGIN_DESTINATION_ONLY # returns only origin and destination stops (Hafas::passingPoints=false)
                     - REAL_BOARDING_ALIGHTING # returns only stops where a customer may step in/out of the transport-product (Hafas: passingPoints=true;showPassingPoints=false)
                     #- ALL_BOARDING_ALIGHTING  future use: virtual stops
+                #decision: proposal to replace serviceBrands with transport mode: are the two covering the same notion ? 
+                transportMode:
+                  description: 'transport mode (code list of MERITS). Optional for offer requests, included for alignment with FSM'
+                  type: string
                 serviceBrands:
                   description: 
                     Service brand codes allowed in response, code list published on UIC web site 
@@ -337,6 +343,7 @@ components:
             type: string
         href:
           type: string
+          format: uri
           description: URL to the linked resource (no parameters needed).
           example: https://www.brussels.info/train-stations/
         method:
@@ -475,7 +482,7 @@ components:
           example: d290f1ee-6c54-4b01-90e6-d701748f0851
         type:
           type: string
-          enum: [ADDRESS, STATION, STATION_COMPLEX, STATION_ZONE, POI_BORDER, POI ]
+          enum: [ADDRESS, STATION, STATION_COMPLEX, STATION_ZONE, POI ]
         Station: 
           $ref: '#/components/schemas/StationDef'
         POI:
@@ -483,7 +490,7 @@ components:
         Address:
           $ref: '#/components/schemas/Address'
         coords:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: '#/components/schemas/GeoCoordinateDef'
         links:
           type: array
           description: 
@@ -573,22 +580,6 @@ components:
         - country
         - localCode
       additionalProperties: false  
-    Coordinate:
-      type: object
-      properties:
-        lat:
-          type: number
-          format: double
-          example: 46.948825
-          description: Latitude of centre coordinate (WGS84 in decimal degrees).
-        lon:
-          type: number
-          format: double
-          example: 7.439122
-          description: Longitude of centre coordinate (WGS84 in decimal degrees).      
-      required:
-      - lat
-      - lon
     TripsCollection:
       type: object
       properties:
@@ -614,3 +605,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Link'
+    GeoCoordinateDef:
+      type: object
+      properties:
+        system:
+          description: 'geo coordinate system indication: wgs84 = WGS 84 standard system, grs80 = (outdated) GRS 80 coordinate system'
+          type: string
+          enum:
+            - wgs84
+            - grs80
+          default: wgs84
+        accuracy:
+          description: to be proviced in degree
+          type: number
+        latitude:
+          description: to be provided in degree
+          type: number
+        longitude:
+          description: to be provided in degree
+          type: number
+      required:
+        - latitude
+        - longitude
+      additionalProperties: false
