@@ -1,27 +1,35 @@
+#decision: it seems the mvp approach is an issue for ERA. On the other hand, the deadline cannot be met on full spec scope => ?
 openapi: 3.0.0
 # Added by API Auto Mocking Plugin
 servers:
   - description: fsm dummy server
     url: https://virtserver.swaggerhub.com/Real-IT/FSM_MVP/1.0.0
 info:
-  description: This is the FSM API
-  version: "1.0.0"
-  title: FSM API
+  version: 1.0.0
+  title: UIC 90918-10 - FSM
+  description: get available places for graphical reservation
   contact:
-    email: you@your-company.com
+    name: UIC
+    url: 'https://www.uic.org'
+    email: uic@uic.org
   license:
     name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
 tags:
   - name: Distributor
     description: relevant for distribution usage
   - name:  Allocator
     description: relevant for allocator usage
+  - name: Journey
+    description: functionalities related to timetable-only information
+  - name: Offers
+    description: funcitonalities related to the exposure and selection of bookable offers
 paths:
   /locations:
     get:
       tags:
-        - FSM
+        - Distributor
+        - Journey
       summary: allows looking up matching station for a given match value based on MatchType
       operationId: getLocations
       description: allows to build a lookup functionality to get station codes based on whatever is known of the station
@@ -90,7 +98,8 @@ paths:
   /location/{id}:
     get:
       tags:
-        - FSM
+        - Distributor
+        - Journey
       summary: retrieves a location element
       operationId: getLocation
       description: allows to retrieve a complete description 
@@ -117,7 +126,8 @@ paths:
   /trip{id}:
     get:
       tags:
-        - FSM
+        - Distributor
+        - Journey
       summary: retrieves a trip element
       parameters:
         - in: path
@@ -141,16 +151,26 @@ paths:
                 $ref: '#/components/schemas/TripDef'
         '400':
           description: bad input parameter
-  /tripsCollection:
+  /tripsCollection{id}:
     get:
       tags:
-          - FSM
+          - Distributor
+          - Journey
       summary: 
         The tripsCollection service returns different trips for 
         a specified origin and destination (and via). 
         The unique codes of the origin and destination can be resolved using the locations service.
       operationId: getTripsCollection
       parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.      
         - name: Accept-Language
           in: header
           description:
@@ -196,10 +216,12 @@ paths:
         '500':
           description: Internal server error
         '501':
-          description: Not implemented          
+          description: Not implemented
+  /tripsCollection:
     post:
       tags:
-        - FSM
+        - Distributor
+        - Journey
       summary: 
         The tripsCollection service returns different trips for a specified origin
         and destination (and via). The unique codes of the origin and
@@ -219,84 +241,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-              #decision: how do we specify location as parameters. At the moment it is implicitly limited to station codes, but maybe we should broaden the scope here
-                matchType:
-                  description:
-                    Defines the search token type in matchValue (TEXT for names; ANY_CODE fallbacks to the code supported by the underlyling system (like UIC, EVA or RESARAIL); UIC/EVA/RESARAIL forces stations defined by the appropriate code-system explicitely (national aspect); COORDS given as "lat,lon").
-                  type: string
-                  default: NAME
-                  enum: 
-                  - NAME     # station name
-                  - ANY_CODE # use if caller does not know default code of   underlyling system
-                  - CODELIST
-                  - COORDS
-                  # Future use: ADDRESS_OR_POI
-                matchCodeList:
-                  description:
-                    in case matchType is codelist, the codelist to search into
-                  type: string
-                originValue:
-                  description: 
-                    The origin or departing location.
-                    Unique code value has to be set according to valueType.
-                  type: string
-                destinationValue:
-                  description:
-                    The destination or arrival location.
-                    Unique code value has to be set according to valueType.
-                  type: string
-                viaValues:
-                  description:
-                    Ordered list of via locations within the trip.
-                    Unique code value has to be set according to valueType.
-                    Max number of via's depends on the underlying system.
-                  type: array
-                  items:
-                    type: string
-                dateTime:
-                  description: 
-                    Local date/time of the underlying system (ISO notation see RFC3339-sec5.6).
-                    Timezone is related to station time, therefore it must not be specified in request.
-                    The underlying system will find hits about the given instance in time and will respond dateTime with appropriate TIMEZONE as well.
-                  type: string
-                  format: date-time
-                  default: Now (at origin)
-                isArrival:
-                  description: 
-                    Defines whether or not the given date/time is the latest arrival 
-                    (true arriving at given time; false departing at given time).
-                  type: boolean
-                  default: false
-                stopBehaviour:
-                  description: 
-                    Influences what stops are to be returned in response
-                    (ORIGIN_DESTINATION_ONLY returns no intermediate stops;
-                    REAL_BOARDING_ALIGHTING returns all stops except virtual stops).
-                  type: string
-                  default: ORIGIN_DESTINATION_ONLY
-                  enum: 
-                    - ORIGIN_DESTINATION_ONLY # returns only origin and destination stops (Hafas::passingPoints=false)
-                    - REAL_BOARDING_ALIGHTING # returns only stops where a customer may step in/out of the transport-product (Hafas: passingPoints=true;showPassingPoints=false)
-                    #- ALL_BOARDING_ALIGHTING  future use: virtual stops
-                #decision: proposal to replace serviceBrands with transport mode: are the two covering the same notion ? 
-                transportMode:
-                  description: 'transport mode (code list of MERITS). Optional for offer requests, included for alignment with FSM'
-                  type: string
-                serviceBrands:
-                  description: 
-                    Service brand codes allowed in response, code list published on UIC web site 
-                  type: array
-                  items:
-                    type: string
-                maxChanges:
-                  description: Max amount of transport-product changes (0 for     direct connection, default/max=11)
-                  type: number
-                # Future use incremental/additionalChangingTime
-              required:
-                - originValue
-                - destinationValue
+              $ref: '#/components/schemas/TripRequest'
       responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
         '200':
           description: Trip(s) found
@@ -325,6 +270,225 @@ paths:
           description: Internal server error
         '501':
           description: Not implemented
+  /TripOffersCollection{id}:
+    get:
+      tags:
+          - Distributor
+          - Allocator
+          - Offers
+      summary: 
+        The tripOffersCollection service returns different offes and trips for 
+        a specified origin and destination (and via). 
+        The unique codes of the origin and destination can be resolved using the locations service.
+      operationId: getTripOffersCollection
+      parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.      
+        - name: Accept-Language
+          in: header
+          description:
+           Describes the set of natural languages that are preferred as a response to the request (see RFC2616-sec14.4).
+           The response header will set "Content-Language" concerning the content
+           (supported languages and fallback-language, depends on underlyling system).
+          schema:
+            type: string
+          required: false
+        - name: Scroll-Context
+          in: header
+          description:
+             Based on a previous search-response, earlier or later connections for the same   trip can be retrieved
+             by scrolling back and forth (by a pointer-context). You must use the same request parameters as in the original
+               trips-request and the given values in the response for either "ScrollBack-Context" or "ScrollForward-Context" for optional scrolling.
+          schema:
+            type: string
+          required: false
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: Trip(s) found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripOffersCollection'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented   
+  /TripOffersCollection:
+    post:
+      tags:
+        - Distributor
+        - Allocator
+        - Offers
+      summary: 
+        The tripsCollection service returns different trips for a specified origin
+        and destination (and via). The unique codes of the origin and
+        destination can be resolved using the locations service.
+      operationId: getOffersUsingGET
+      parameters:
+        - name: Accept-Language
+          in: header
+          description:
+             Describes the set of natural languages that are preferred as a response to the request (see RFC2616-sec14.4).
+             The response header will set "Content-Language" concerning the content
+             (supported languages and fallback-language, depends on underlyling system).
+          schema:
+            type: string
+          required: false
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripOfferRequest'
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: Trip(s) found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripOffersCollection'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented
+  /TripOffer/{id}:
+    get:
+      tags:
+        - Distributor
+        - Allocator
+        - Offers
+      summary: 
+        The tripOffer service returns different offes and trips for 
+        a specified origin and destination (and via). 
+        The unique codes of the origin and destination can be resolved using the locations service.
+      operationId: getTripOffer
+      parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: TripOffer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripOffer'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented               
+  /Offer/{id}:
+    get:
+      tags:
+        - Distributor
+        - Allocator
+        - Offers
+      summary: 
+        The tripOffer service returns different offes and trips for 
+        a specified origin and destination (and via). 
+        The unique codes of the origin and destination can be resolved using the locations service.
+      operationId: getOffer
+      parameters:
+        - in: path
+          name: id
+          schema:
+             type: string
+             format: uuid
+             example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          required: true
+          description: 
+            ID of the trip to get.
+      responses: # see "Error-Handling.md" for HttpStatus 4xx, 5xx
+        '200':
+          description: TripOffer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+          headers:
+            Content-Language:
+              schema:
+                type: string
+                description: The language of translatable strings in the response (see RFC2616-sec14.12).
+        '204': # see ResponseBody_204.json
+          description: No trip(s) found
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '415':
+          description: Unsupported Media type # must be "application/json"
+        '500':
+          description: Internal server error
+        '501':
+          description: Not implemented               
  
 components:
   schemas:
@@ -532,7 +696,7 @@ components:
           example: 'http://some.provider/trip/2345'
         title:
           type: string
-          example: 'Bruxelles-Midi - Paris-Nord 10:05'      
+          example: 'Bruxelles-Midi - Paris-Nord 20200701 10:05'      
     TripDef:
       type: object
       properties:
@@ -628,3 +792,312 @@ components:
         - latitude
         - longitude
       additionalProperties: false
+    TripRequest:
+      type: object
+      properties:
+      #decision: how do we specify location as parameters. At the moment it is implicitly limited to station codes, but maybe we should broaden the scope here
+        matchType:
+          description:
+            Defines the search token type in matchValue (TEXT for names; ANY_CODE fallbacks to the code supported by the underlyling system (like UIC, EVA or RESARAIL); UIC/EVA/RESARAIL forces stations defined by the appropriate code-system explicitely (national aspect); COORDS given as "lat,lon").
+          type: string
+          default: NAME
+          enum: 
+          - NAME     # station name
+          - ANY_CODE # use if caller does not know default code of   underlyling system
+          - CODELIST
+          - COORDS
+          # Future use: ADDRESS_OR_POI
+        matchCodeList:
+          description:
+            in case matchType is codelist, the codelist to search into
+          type: string
+        originValue:
+            description: 
+              The origin or departing location.
+              Unique code value has to be set according to valueType.
+            type: string
+        destinationValue:
+          description:
+            The destination or arrival location.
+            Unique code value has to be set according to valueType.
+          type: string
+        viaValues:
+          description:
+            Ordered list of via locations within the trip.
+            Unique code value has to be set according to valueType.
+            Max number of via's depends on the underlying system.
+          type: array
+          items:
+            type: string
+        dateTime:
+          description: 
+            Local date/time of the underlying system (ISO notation see RFC3339-sec5.6).
+            Timezone is related to station time, therefore it must not be specified in request.
+            The underlying system will find hits about the given instance in time and will respond dateTime with appropriate TIMEZONE as well.
+          type: string
+          format: date-time
+          default: Now (at origin)
+        isArrival:
+          description: 
+            Defines whether or not the given date/time is the latest arrival 
+            (true arriving at given time; false departing at given time).
+          type: boolean
+          default: false
+        stopBehaviour:
+          description: 
+            Influences what stops are to be returned in response
+            (ORIGIN_DESTINATION_ONLY returns no intermediate stops;
+            REAL_BOARDING_ALIGHTING returns all stops except virtual stops).
+          type: string
+          default: ORIGIN_DESTINATION_ONLY
+          enum: 
+          - ORIGIN_DESTINATION_ONLY # returns only origin and destination stops (Hafas::passingPoints=false)
+          - REAL_BOARDING_ALIGHTING # returns only stops where a customer may step in/out of the transport-product (Hafas: passingPoints=true;showPassingPoints=false)
+          #- ALL_BOARDING_ALIGHTING  future use: virtual stops
+          #decision: proposal to replace serviceBrands with transport mode: are the two covering the same notion
+        transportMode:
+          description: transport mode (code list of MERITS). Optional for offer requests, included for alignment with FSM
+          type: string
+        serviceBrands:
+          description: 
+            Service brand codes allowed in response, code list published on UIC web site 
+          type: array
+          items:
+            type: string
+        maxChanges:
+          description: Max amount of transport-product changes (0 for     direct connection, default/max=11)
+          type: number
+          # Future use incremental/additionalChangingTime
+        extendedChangeTime:
+          description: OOS MVP
+            Indicates additional transfer time required where a transfer is present in the resulting trip. Expressed in minutes
+          type: number
+        PRMAssistance:
+          description: OOS MVP
+            Indicates a need for an itinerary where end-to-end PMR assistance and accessibility is possible
+          type: boolean
+          default: false
+      required:
+      - originValue
+      - destinationValue
+    OfferRequest:
+    #decision: I could not get my hands on a firm list of parameters we wanted to support (at least for MVP) in the offer search for the offer part (for trips I think we  are fine)
+      type: object
+      properties:
+        Flexibilities:
+          description:
+            Defines the flexibility levels desired in the fares returned
+          type: array
+          items:
+            $ref: '#/components/schemas/flexibility'
+        Classes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceClassDef'
+    TripOfferRequest:
+      type: object
+      properties:
+        TripId:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          description: optionally used instead of tripRequest element, if the offers are to be constructed for a previously built trip
+          #decision: potentially we ma want to also optionally provide an endpoint, so the trip can potentially be hosted on a different domain
+        TripDomain:
+          type: string
+        Trip: 
+          #decision: not that because the tripdef element has been a little modified, the structure that can be submitted here for allocator use is also a bit different. Those differences can be handled with non-mandatory elements and comments, but maybe it is still worth creating a different data structure
+          $ref: '#/components/schemas/TripDef'
+        Passengers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PassengerDef'
+          format: uri
+          example: http://some.journeyplanner.com/trip
+        TripRequest:
+          $ref: '#/components/schemas/TripRequest'
+        OfferRequest:
+          $ref: '#/components/schemas/OfferRequest'
+    TripOffer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        Trip:
+          $ref: '#/components/schemas/TripRef'
+        Offers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfferRef'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    TripOfferRef:
+      type: object
+      properties:
+        href: 
+          type: string
+          format: url
+          example: 'http://some.provider/TripOffer/2345'
+        title:
+          type: string
+          example: 'Bruxelles-Midi 10:05 20200701'
+    Offer:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/CurrencyPriceDef'
+        trip:
+          $ref: '#/components/schemas/TripRef'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    OfferRef:
+      type: object
+      properties:
+        href: 
+          type: string
+          format: url
+          example: 'http://some.provider/Offer/2345'
+        title:
+          type: string
+          example: 'Bruxelles-Midi- Paris-Nord 10:05 20200701 NF 50 EUR'
+    TripOffersCollection:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        tripOffersCollection:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripOfferRef'
+        ScrollBack-Context: # supports Hafas::scrolling
+          type: string
+          description: 
+            Scroll reference for the current response to scroll backward.
+            (Value depends on underlying system.)
+        ScrollForward-Context: # supports Hafas::scrolling
+          type: string
+          description: 
+            Scroll reference for the current response to scroll   forward.
+            (Value depends on underlying system.)
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+    CurrencyDef:
+      description: ISO4217 currency codes
+      type: string            
+    CurrencyPriceDef:
+      type: object
+      minProperties: 1
+      properties:
+        currency:
+          $ref: '#/components/schemas/CurrencyDef'
+        amount:
+          type: number
+        vatDetail:
+          type: array
+          items:
+            type: object
+            properties:
+              Country:
+                type: string
+              Amount:
+                type: number
+              Percentage:
+                type: number
+              taxId:
+                type: string
+              scope:
+                description: 'scope where the VAT applies: INTERNALTIONAL, NATIONAL, SHORT_DISTANCE, LONG_DISTANCE'
+                type: string
+            required:
+              - Country
+            additionalProperties: false
+      required:
+        - currency
+        - amount
+      additionalProperties: false            
+    PassengerDef:
+      type: object
+      properties:
+        #decision: we agreed in FSM to only name "ID " fields referring to a resource ID, and reference ids would be called reference => travelerId renamed to passengerReference. 
+        #decision: while these passengerDefs should be data structures, I think in responses they should be resources.
+        passengerReference:
+          description: used to refer to passengers from other elements, or from caller system. Can also be used to link fares to the individual traveler in the reply (allocator)
+          type: string
+        dateOfBirth:
+          description: YYYY-MM-DD (2017-07-21)
+          type: string
+        reductionCards:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReductionCardReferenceDef'
+        gender:
+          description: 'MALE,FEMALE,X (only in case of night trains)'
+          type: string
+        type:
+          type: string
+          #decision: I would need an extract of the various codelists referred to in ntm specs so I know what it is about
+          description: Values from the traveler type code list IRS 90918-10
+      required:
+        - travelerId
+        - dateOfBirth
+      additionalProperties: false
+    ReductionCardReferenceDef:
+      type: object
+      properties:
+        cardId:
+          description: code of the card type according to code list
+          type: string
+        cardName:
+          description: card name for printing on tickets
+          type: string
+        #decision: in FSM we opted for not having a service class on the card, and make 2 different cards where needed => removed cardclassI
+        issuer:
+          type: string
+          description: RICS company code or the upcoming compatible ERA company code. In case proprietary codes are used on a bilateral base the codes must have at least 5 positions and start with x
+      required:
+        - cardId
+      additionalProperties: false
+    ServiceClassDef:
+      type: object
+      properties:
+        id:
+          description: The detailed comfort class 
+          type: string
+          #decions : propose to make class id an enum
+          enum:
+          - A
+          - B
+          - C
+          - D
+        #decision: removed textRef and replaced text property with carrierName
+        carrierName:
+          type: string
+          description: the name the carrier itself uses to designate this specific comfort class
+        #propose to make classicClass an enum
+        classicClass:
+          description: generic class classification,mostly used to harmonize choice and representation across multiple carriers
+          type: string
+          enum:
+          - FIRST
+          - SECOND
+      required:
+        - id
+      additionalProperties: false
+    flexibility:
+      type: string
+      enum: 
+        - FULLFLEX
+        - MIDFLEX
+        - NONFLEX
+          
+        
