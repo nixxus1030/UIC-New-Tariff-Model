@@ -70,14 +70,13 @@ paths:
           required: false
         - name: countryCode
           in: query
-          description: Search locations for a specific country (ISO 3166, 2-digits).
+          description: Search locations for a specific country (ISO 3166, 2-digits). Meant for autocomplete functionalty. A separate endpoint or channel would be provided for mass downloads
           required: false
           schema:
             type: string
             example: CH
         - name: limit
           in: query
-          #decision: should we really limit to 50 => meant for autocomplete or allow larger "downloads", more meant for distributing reference data
           description:
             The number of locations to be returned ([1..50]).
           required: false
@@ -626,7 +625,6 @@ components:
         - country
         - localCode
       additionalProperties: false  
-    #decision: I propose to make location a resource...and to have a locationRef for stops, origin, destinations etc. Rationale: the location is cacheable so no need to include it all in each message. I think this approach actually makes sense to avoid nesting resources.
     LocationRef:
       type: object
       properties:
@@ -707,9 +705,9 @@ components:
         segments:
           type: array
           items:
-            #decision: proposition is to have a separate segment definition
+            #alignment: proposition is to have a separate segment definition
             $ref:  '#/components/schemas/segment'
-        #decision: proposition is to add trip origin & destination
+        #alignment: proposition is to add trip origin & destination
         origin:
           $ref: '#/components/schemas/LocationRef'
         destination:
@@ -902,11 +900,11 @@ components:
           format: uuid
           example: d290f1ee-6c54-4b01-90e6-d701748f0851
           description: optionally used instead of tripRequest element, if the offers are to be constructed for a previously built trip
-          #decision: potentially we ma want to also optionally provide an endpoint, so the trip can potentially be hosted on a different domain
+          #decision: potentially we may want to also optionally provide an endpoint, so the trip can potentially be hosted on a different domain
         TripDomain:
           type: string
         Trip: 
-          #decision: not that because the tripdef element has been a little modified, the structure that can be submitted here for allocator use is also a bit different. Those differences can be handled with non-mandatory elements and comments, but maybe it is still worth creating a different data structure
+          #decision: note that because the tripdef element has been a little modified, the structure that can be submitted here for allocator use is also a bit different. Those differences can be handled with non-mandatory elements and comments, but maybe it is still worth creating a different data structure
           $ref: '#/components/schemas/TripDef'
         Passengers:
           type: array
@@ -1060,7 +1058,7 @@ components:
         cardName:
           description: card name for printing on tickets
           type: string
-        #decision: in FSM we opted for not having a service class on the card, and make 2 different cards where needed => removed cardclassI
+        #alignement: in FSM we opted for not having a service class on the card, and make 2 different cards where needed => removed cardclassI
         issuer:
           type: string
           description: RICS company code or the upcoming compatible ERA company code. In case proprietary codes are used on a bilateral base the codes must have at least 5 positions and start with x
@@ -1079,7 +1077,7 @@ components:
           - B
           - C
           - D
-        #decision: removed textRef and replaced text property with carrierName
+        #alignment: removed textRef and replaced text property with carrierName
         carrierName:
           type: string
           description: the name the carrier itself uses to designate this specific comfort class
